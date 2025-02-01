@@ -1,6 +1,7 @@
-k// TerminalModalNode.js
-// This client-side script creates a button on the node that, when clicked,
-// opens a modal dialog (60% of viewport width/height) acting as an interactive terminal.
+// TerminalModalNode.js
+// This client-side script creates a button on the node that opens a modal dialog
+// with fixed dimensions. The modal contains a sizable output area and an input field
+// where you can type and run terminal commands interactively.
 class TerminalModalNodeUI {
     constructor(node) {
         this.node = node;
@@ -8,7 +9,7 @@ class TerminalModalNodeUI {
     }
     
     createButton() {
-        // Create a button element to open the terminal modal.
+        // Create a button element for opening the terminal modal.
         this.button = document.createElement("button");
         this.button.innerText = "Open Terminal";
         this.button.style.padding = "10px 20px";
@@ -16,14 +17,14 @@ class TerminalModalNodeUI {
         this.button.style.fontSize = "16px";
         this.button.onclick = () => { this.openModal(); };
         
-        // Append the button to the node's container (if available).
-        if(this.node && this.node.container) {
+        // Append the button to the node's container if available.
+        if (this.node && this.node.container) {
             this.node.container.appendChild(this.button);
         }
     }
     
     openModal() {
-        // Create an overlay for the modal dialog.
+        // Create an overlay that covers the full screen.
         this.modalOverlay = document.createElement("div");
         this.modalOverlay.style.position = "fixed";
         this.modalOverlay.style.top = "0";
@@ -36,17 +37,17 @@ class TerminalModalNodeUI {
         this.modalOverlay.style.alignItems = "center";
         this.modalOverlay.style.zIndex = "1000";
         
-        // Create the modal container with larger dimensions.
+        // Create the modal container with fixed dimensions.
         this.modalContainer = document.createElement("div");
         this.modalContainer.style.backgroundColor = "#fff";
-        this.modalContainer.style.width = "60vw";  // 60% of viewport width
-        this.modalContainer.style.height = "60vh"; // 60% of viewport height
+        this.modalContainer.style.width = "500px";   // Fixed width
+        this.modalContainer.style.height = "500px";  // Fixed height
         this.modalContainer.style.padding = "16px";
         this.modalContainer.style.boxShadow = "0px 0px 15px rgba(0,0,0,0.5)";
         this.modalContainer.style.display = "flex";
         this.modalContainer.style.flexDirection = "column";
         
-        // Header with title and a close button.
+        // Header with title and close button.
         const header = document.createElement("div");
         header.style.display = "flex";
         header.style.justifyContent = "space-between";
@@ -62,9 +63,10 @@ class TerminalModalNodeUI {
         header.appendChild(title);
         header.appendChild(closeButton);
         
-        // Output area (bigger and scrollable).
+        // Output area with fixed dimensions.
         this.outputArea = document.createElement("div");
-        this.outputArea.style.flex = "1";
+        this.outputArea.style.width = "400px";          // Fixed width for output area
+        this.outputArea.style.height = "300px";         // Fixed height for output area
         this.outputArea.style.marginTop = "12px";
         this.outputArea.style.padding = "12px";
         this.outputArea.style.backgroundColor = "#f7f7f7";
@@ -73,14 +75,15 @@ class TerminalModalNodeUI {
         this.outputArea.style.fontSize = "16px";
         this.outputArea.style.border = "1px solid #ddd";
         
-        // Input container with a larger input field and run button.
+        // Input container with a fixed-size input field.
         const inputContainer = document.createElement("div");
         inputContainer.style.display = "flex";
         inputContainer.style.marginTop = "12px";
         
         this.inputField = document.createElement("input");
         this.inputField.type = "text";
-        this.inputField.style.flex = "1";
+        this.inputField.style.width = "400px";         // Fixed width for input field
+        this.inputField.style.height = "50px";         // Fixed height for input field
         this.inputField.style.padding = "12px";
         this.inputField.style.fontSize = "16px";
         this.inputField.style.border = "1px solid #ddd";
@@ -96,7 +99,7 @@ class TerminalModalNodeUI {
         inputContainer.appendChild(this.inputField);
         inputContainer.appendChild(submitButton);
         
-        // Assemble the modal: header, output area, and input container.
+        // Assemble modal container.
         this.modalContainer.appendChild(header);
         this.modalContainer.appendChild(this.outputArea);
         this.modalContainer.appendChild(inputContainer);
@@ -105,7 +108,7 @@ class TerminalModalNodeUI {
     }
     
     closeModal() {
-        if(this.modalOverlay) {
+        if (this.modalOverlay) {
             document.body.removeChild(this.modalOverlay);
             this.modalOverlay = null;
         }
@@ -113,13 +116,13 @@ class TerminalModalNodeUI {
     
     runCommand() {
         const command = this.inputField.value;
-        if(command.trim() === "") return;
+        if (command.trim() === "") return;
         
         // Append the command to the output area.
         this.appendOutput("> " + command);
         
-        // Call the backend Python function via the node's interface.
-        if(this.node && typeof this.node.callPython === "function") {
+        // Call the Python backend via the node's interface.
+        if (this.node && typeof this.node.callPython === "function") {
             this.node.callPython("run_command", [command]).then((result) => {
                 this.appendOutput(result);
             }).catch((err) => {
@@ -147,4 +150,3 @@ class TerminalModalNodeUI {
 if (typeof registerCustomNodeUI === "function") {
     registerCustomNodeUI("terminal_modal_node", TerminalModalNodeUI);
 }
-
