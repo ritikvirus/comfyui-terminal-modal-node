@@ -16,7 +16,7 @@ def start_shell():
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        universal_newlines=True,
+        universal_newlines=False,  # Handle binary data
         bufsize=1  # Line-buffered
     )
     # Start a daemon thread that continuously reads from the shell's stdout.
@@ -24,11 +24,12 @@ def start_shell():
 
 def _read_stdout():
     global _shell_process, _output_queue
-    # Continuously read lines from the shell and push them into the queue.
     while True:
-        line = _shell_process.stdout.readline()
-        if not line:
+        line_bytes = _shell_process.stdout.readline()
+        if not line_bytes:
             break
+        # Decode the line with UTF-8, replacing invalid characters
+        line = line_bytes.decode('utf-8', errors='replace')
         _output_queue.put(line)
 
 class TerminalNode:
@@ -64,7 +65,8 @@ class TerminalNode:
             # Append the marker along with the exit code ($?) to the command.
             full_command = command.strip() + f"\necho {marker} $?\n"
             try:
-                _shell_process.stdin.write(full_command)
+                # Write the command to the shell's stdin as bytes
+                _shell_process.stdin.write(full_command.encode('utf-8'))
                 _shell_process.stdin.flush()
             except Exception as ex:
                 return (f"Error writing to shell: {str(ex)}",)
